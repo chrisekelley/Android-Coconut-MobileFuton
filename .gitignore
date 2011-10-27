@@ -1,0 +1,14 @@
+*~
+_site/
+*.swp
+.DS_Store
+bin/
+gen/libs/armeabi
+libs/couchbase.jar
+libs/OtpErlang.jar
+assets/install
+assets/lib
+libs/armeabi
+Couchbase.zip
+couchbase.xml
+
