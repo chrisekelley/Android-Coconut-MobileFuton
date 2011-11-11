@@ -1,4 +1,4 @@
-package com.daleharvey.mobilefuton;
+package org.rti.rcd.ict.lgug;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,7 +22,6 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.ServiceConnection;
 import android.content.res.AssetManager;
@@ -38,14 +37,15 @@ import android.webkit.WebViewClient;
 
 import com.couchbase.android.CouchbaseMobile;
 import com.couchbase.android.ICouchbaseDelegate;
+import com.daleharvey.mobilefuton.AndCouch;
 
-public class MobileFutonActivity extends Activity {
+public class CoconutActivity extends Activity {
 
-	private final MobileFutonActivity self = this;
+	private final CoconutActivity self = this;
 	protected static final String TAG = "CouchAppActivity";
 
+	private CouchbaseMobile couch;
 	private ServiceConnection couchServiceConnection;
-	private ProgressDialog installProgress;
 	private WebView webView;
 
 	@Override
@@ -74,71 +74,32 @@ public class MobileFutonActivity extends Activity {
 		@Override
 		public void couchbaseStarted(String host, int port) {
 
-			if (installProgress != null) {
-				installProgress.dismiss();
-			}
-
 			String url = "http://" + host + ":" + Integer.toString(port) + "/";
 		    String ip = getLocalIpAddress();
 		    String param = (ip == null) ? "" : "?ip=" + ip;
 		    
 		    Log.v(TAG, "host: " + host + " ip: " + ip);
-		    AndCouch dbTestResults = null;
-
-		    // Load MobileFuton
+		    
 		    try {
-		    	dbTestResults = AndCouch.put(url + "mobilefuton", null);
-
-		    } catch (JSONException e1) {
-		    	// TODO Auto-generated catch block
-		    	e1.printStackTrace();
+				couch.installDatabase("mobilefuton.couch");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		    
+		    // Copy the couch db from /usr/local/var/lib/couchdb on dev instance.
+		    try {
+		    	String sourceDb = "coconut.couch.jpg";
+		    	String destDb = "coconut.couch";
+		    	couch.installDatabase(sourceDb);
+		    	File source = new File(CouchbaseMobile.externalPath() + "/db/" + sourceDb);
+		    	File destination = new File(CouchbaseMobile.externalPath() + "/db/" + destDb);
+		    	source.renameTo(destination);
+		    } catch (IOException e) {
+		    	e.printStackTrace();
 		    }
-
-		    if (dbTestResults.status != 412) {
-		    	ensureLoadDoc("mobilefuton", url, "_design/mobilefuton", "mobilefuton.json");
-
-		    	// Load coconut
-		    	try {
-		    		AndCouch.put(url + "coconut", null);
-		    	} catch (JSONException e1) {
-		    		// TODO Auto-generated catch block
-		    		e1.printStackTrace();
-		    	}
-		    	try {
-					ensureLoadDoc("coconut", url, "_design/coconut", "coconut.json.jpg");
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-
-		    	// Load contents of docs (formerly _docs)
-		    	Log.v(TAG, "Getting a list of docs.");
-		    	AssetManager assets = getAssets();
-		    	String[] fileNames = null;
-		    	try {
-		    		fileNames = assets.list("docs");
-		    		for (String fileName : fileNames) {
-		    			Log.v(TAG, "File: " + fileName);
-		    			ensureLoadDoc("coconut", url, null, "docs/" + fileName);
-		    		}
-		    		Log.v(TAG, "Launchng app at url: " + url);
-		    	} catch (IOException e) {
-		    		Log.v(TAG, "Error getting docs.");
-		    		e.printStackTrace();
-		    	}
-		    }
-
 			String couchAppUrl = url + "coconut/_design/coconut/index.html";
-			//launchCouchApp(url + "coconut/_design/app/index.html" + param);
 			launchCouchApp(couchAppUrl);
 		}
-
-//		public void installing(int completed, int total) {
-//			ensureProgressDialog();
-//			installProgress.setTitle("Installing");
-//			installProgress.setProgress(completed);
-//			installProgress.setMax(total);
-//		}
 
 		@Override
 		public void exit(String error) {
@@ -147,18 +108,9 @@ public class MobileFutonActivity extends Activity {
 		}
 	};
 
-	private void ensureProgressDialog() {
-		if (installProgress == null) {
-			installProgress = new ProgressDialog(MobileFutonActivity.this);
-			installProgress.setTitle(" ");
-			installProgress.setCancelable(false);
-			installProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			installProgress.show();
-		}
-	}
-
 	private void startCouch() {
-		CouchbaseMobile couch = new CouchbaseMobile(getBaseContext(), mCallback);
+		//CouchbaseMobile couch = new CouchbaseMobile(getBaseContext(), mCallback);
+		couch = new CouchbaseMobile(getBaseContext(), mCallback);
 
 		try {
 			couch.copyIniFile("mobilefuton.ini");
@@ -192,7 +144,7 @@ public class MobileFutonActivity extends Activity {
 	}
 
 	private void launchCouchApp(String url) {
-		webView = new WebView(MobileFutonActivity.this);
+		webView = new WebView(CoconutActivity.this);
 		webView.setWebChromeClient(new WebChromeClient());
 		webView.setWebViewClient(new CustomWebViewClient());
 		webView.getSettings().setJavaScriptEnabled(true);
@@ -267,7 +219,7 @@ public class MobileFutonActivity extends Activity {
 	 * @param docName - doc _id; dbName if null.
 	 * @param fileName
 	 */
-	private void ensureLoadDoc(String dbName, String hostPortUrl, String docName, String fileName) {
+	public void ensureLoadDoc(String dbName, String hostPortUrl, String docName, String fileName) {
 
 		try {
 

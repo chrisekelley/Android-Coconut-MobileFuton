@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package com.daleharvey.mobilefuton;
+package org.rti.rcd.ict.lgug;
 
 public final class R {
     public static final class attr {

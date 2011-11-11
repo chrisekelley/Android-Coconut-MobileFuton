@@ -81,10 +81,15 @@ public class AndCouch {
 			}
 
 			if (method != "GET" && data != null) {
-				c.setDoInput(true);
-				c.setRequestProperty("Content-Length",
-						Integer.toString(data.length()));
-				c.getOutputStream().write(data.getBytes(charEncoding));
+				try {
+					c.setDoInput(true);
+					c.setRequestProperty("Content-Length",
+							Integer.toString(data.length()));
+					c.getOutputStream().write(data.getBytes(charEncoding));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			c.connect();
