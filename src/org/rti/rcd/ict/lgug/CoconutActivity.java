@@ -15,45 +15,119 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.Formatter;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.rti.rcd.ict.lgug.Push.AddMessageTask;
+import org.rti.rcd.ict.lgug.Push.ToastMessage;
+import org.rti.rcd.ict.lgug.c2dm.Config;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.couchbase.android.CouchbaseMobile;
 import com.couchbase.android.ICouchbaseDelegate;
 import com.daleharvey.mobilefuton.AndCouch;
+import com.google.android.c2dm.C2DMessaging;
 
 public class CoconutActivity extends Activity {
 
 	private final CoconutActivity self = this;
 	protected static final String TAG = "CouchAppActivity";
+    private static final String LOG_TAG = "CouchAppActivity";
+
+	private static final int ACTIVITY_ACCOUNTS = 1;
+    private static final int MENU_ACCOUNTS = 2;    
 
 	private CouchbaseMobile couch;
 	private ServiceConnection couchServiceConnection;
 	private WebView webView;
+	
+    private ArrayList<HashMap<String,String>> list = new ArrayList<HashMap<String,String>>();
+    private SimpleAdapter messages;
+    private Handler uiHandler;
+    private Account selectedAccount;
+    private boolean registered;
+    private static CoconutActivity coconutRef;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		startCouch();
+		uiHandler = new Handler();
+		coconutRef = this;
 	}
+	
+	@Override
+    protected void onActivityResult( int requestCode,
+                                        int resultCode, 
+                                        Intent extras ) {
+        super.onActivityResult( requestCode, resultCode, extras);
+        switch(requestCode) {
+            case ACTIVITY_ACCOUNTS: {
+                    String accountName = extras.getStringExtra( "account" );
+                    selectedAccount = getAccountFromAccountName( accountName );
+                    Toast.makeText(this, "Account selected: "+accountName, Toast.LENGTH_SHORT).show();
+                    if( selectedAccount != null )
+                        register();
+                }
+                break;
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        boolean result = super.onCreateOptionsMenu(menu);
+        menu.add( Menu.NONE, MENU_ACCOUNTS, Menu.NONE, R.string.menu_accounts );
+        return result;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) {
+        switch ( item.getItemId() ) {
+            case MENU_ACCOUNTS: {
+                    Intent i = new Intent();
+                    i.setClassName( 
+                        "org.rti.rcd.ict.lgug",
+                        "org.rti.rcd.ict.lgug.AccountSelector" );
+                    startActivityForResult(i, ACTIVITY_ACCOUNTS );
+                    return true;
+                }
+        }
+        return false;
+    }
+    
+    public static CoconutActivity getRef() {
+        return coconutRef;
+    }
 
 	@Override
 	public void onRestart() {
@@ -69,6 +143,54 @@ public class CoconutActivity extends Activity {
 		} catch (IllegalArgumentException e) {
 		}
 	}
+	
+	 public void displayMessage( String message ) {
+	        //uiHandler.post( new AddMessageTask( message ) );
+	        uiHandler.post( new ToastMessage( this, message ) );
+	    }
+
+	    public Account getSelectedAccount() {
+	        return selectedAccount;
+	    }
+
+	    public void onRegistered() {
+	        Log.d( LOG_TAG, "onRegistered" );
+	        registered = true; 
+	        uiHandler.post( new ToastMessage( this,"Registered" ) );
+	    }
+
+	    public void onUnregistered() {
+	        Log.d( LOG_TAG, "onUnregistered" );
+	        registered = false; 
+	        uiHandler.post( new ToastMessage( this, "Unregistered" ) );
+	    }
+
+	    private Account getAccountFromAccountName( String accountName ) {
+	        AccountManager accountManager = AccountManager.get( this );
+	        Account accounts[] = accountManager.getAccounts();
+	        for( int i = 0 ; i < accounts.length ; ++i )
+	            if( accountName.equals( accounts[i].name ) )
+	                return accounts[i];
+	        return null;
+	    }
+
+	    private void register() {
+	        if( registered )
+	            unregister();
+	        else {
+	            Log.d( LOG_TAG, "register()" );
+	            C2DMessaging.register( this, Config.C2DM_SENDER );
+	            Log.d( LOG_TAG, "register() done" );
+	        }
+	    }
+
+	    private void unregister() {
+	        if( registered ) {
+	            Log.d( LOG_TAG, "unregister()" );
+	            C2DMessaging.unregister( this );
+	            Log.d( LOG_TAG, "unregister() done" );
+	        }
+	    }
 
 	private final ICouchbaseDelegate mCallback = new ICouchbaseDelegate() {
 		@Override
@@ -90,10 +212,21 @@ public class CoconutActivity extends Activity {
 		    try {
 		    	String sourceDb = "coconut.couch.jpg";
 		    	String destDb = "coconut.couch";
-		    	couch.installDatabase(sourceDb);
 		    	File source = new File(CouchbaseMobile.externalPath() + "/db/" + sourceDb);
 		    	File destination = new File(CouchbaseMobile.externalPath() + "/db/" + destDb);
-		    	source.renameTo(destination);
+		    	if (!destination.exists()) {
+                    Log.d(TAG, "Installing the database at " + destination);
+			    	couch.installDatabase(sourceDb);
+			    	source.renameTo(destination);
+		    	}
+//		    	boolean autoSyncEnabled = !C2DMessaging.getRegistrationId(getBaseContext()).equals("");
+//
+//		    	if (!autoSyncEnabled) {
+//		    		Log.i(TAG, "Registering with C2DMessaging");
+//		    		C2DMessaging.register(getBaseContext(), Config.C2DM_SENDER);
+//		    		String registrationId = C2DMessaging.getRegistrationId(getBaseContext());
+//		    		Log.d(TAG, "registrationId: " + registrationId);
+//		    	}
 		    } catch (IOException e) {
 		    	e.printStackTrace();
 		    }
@@ -206,183 +339,44 @@ public class CoconutActivity extends Activity {
 		}
 		return null;
 	}
-
-	/**
-	 *  Will check for the existence of a design doc and if it does not exist,
-	 *  upload the json found at dataPath to create it
-	 *  
-	 *  if (dbName.equals(fileName)), then it is a design document and it compares the couchapphash to see if it needs updating
-	 *  For other documents, it simply puts the file.
-	 *  
-	 * @param dbName - CouchDB name
-	 * @param hostPortUrl - e.g.: http://0.0.0.0:5985
-	 * @param docName - doc _id; dbName if null.
-	 * @param fileName
-	 */
-	public void ensureLoadDoc(String dbName, String hostPortUrl, String docName, String fileName) {
-
-		try {
-
-			//Boolean toUpdate = true;
-			Boolean dDoc = false;
-			String data = null;
-			data = readAsset(getAssets(), fileName);
-			File hashCache = null;
-			String md5 = null;
-
-//			if (dbName.equals(fileName)) {
-//				dDoc = true;
-//				Log.v(TAG, fileName + " is a design document: " + docName + " .");
-//			} else {
-//				Log.v(TAG, fileName + " is not a design document.");
-//			}
-//
-//			if (dDoc == true) {
-//				hashCache = new File(CouchbaseMobile.dataPath() + "/couchapps/" + dbName + ".couchapphash");				
-//				md5 = md5(data);
-//				String cachedHash;
-//
-//				try {
-//					cachedHash = readFile(hashCache);
-//					toUpdate = !md5.equals(cachedHash);
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//					toUpdate = true;
-//				}
-//			} else {
-//				//TODO: compare to version on server.
-//				toUpdate = true;
-//			}
-			
-			//Log.v(TAG, docName + " toUpdate: " + toUpdate);
-
-			//if (toUpdate == true) {
-				String docUrl = null;
-				if (docName != null) {
-					docUrl = hostPortUrl + dbName + "/" + docName;
-				} else {
-					JSONObject json = new JSONObject(data);
-					docName = json.getString("_id");
-					//docUrl = url + dbName + "/_design/" + dbName;
-					docUrl = hostPortUrl + dbName + "/" + docName;
-					Log.v(TAG, fileName + " has the docName: " + docName);
-					Log.v(TAG, "docUrl: " + docUrl);
-				}
-				
-				URL urlObject = new URL(docUrl);
-				String protocol = urlObject.getProtocol();
-				String hostName = urlObject.getHost();
-				int port = urlObject.getPort();
-				String path = urlObject.getPath();
-				String queryString = urlObject.getQuery();
-				
-				URI uri = null;
-				try {
-					uri = new URI(
-							protocol, 
-							null, // userinfo
-							hostName, 
-							port,
-							path,
-							queryString,
-					        null);
-				} catch (URISyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				//String cleanUrlA = uri.toString();
-				//Log.v(TAG, "URL toString: " + cleanUrlA + " path: " + path);
-				
-//				URI uri2 = null; 
-//				try {
-//					uri2 = new URI(docUrl.replace(" ", "%20"));
-//					//Log.v(TAG, "uri2: " + uri2);
-//				} catch (URISyntaxException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-				
-				String cleanUrl = uri.toASCIIString();
-
-				AndCouch req = AndCouch.get(cleanUrl);
-				Log.v(TAG, "cleanUrl: " + cleanUrl + " req.status: " + req.status);
-
-				if (req.status == 404) {
-					Log.v(TAG, "Uploading " + cleanUrl);
-					//AndCouch.put(hostPortUrl + dbName, null);
-					AndCouch.put(cleanUrl, data);
-				} else if (req.status == 200) {
-					Log.v(TAG, cleanUrl + " Found, Updating");
-					String rev = req.json.getString("_rev");
-					JSONObject json = new JSONObject(data);
-					json.put("_rev", rev);
-					//AndCouch.put(hostPortUrl + dbName, null);
-					AndCouch.put(cleanUrl, json.toString());
-				}
-
-				if (dDoc == true) {
-					new File(hashCache.getParent()).mkdirs();
-					writeFile(hashCache, md5);
-				}
-//			} else {
-//				Log.v(TAG, fileName + " is up to date.");
-//			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-			// There is no design doc to load
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-	};
-
-	public static String readAsset(AssetManager assets, String path) throws IOException {
-		InputStream is = assets.open(path);
-		int size = is.available();
-		byte[] buffer = new byte[size];
-		is.read(buffer);
-		is.close();
-		return new String(buffer);
-	}
-
-    public static String md5(String input){
-        String res = "";
-        try {
-            MessageDigest algorithm = MessageDigest.getInstance("MD5");
-            algorithm.reset();
-            algorithm.update(input.getBytes());
-            byte[] md5 = algorithm.digest();
-            String tmp = "";
-            for (int i = 0; i < md5.length; i++) {
-                tmp = (Integer.toHexString(0xFF & md5[i]));
-                if (tmp.length() == 1) {
-                    res += "0" + tmp;
-                } else {
-                    res += tmp;
-                }
-            }
-        } catch (NoSuchAlgorithmException ex) {}
-        return res;
-    }
-
-    public static String readFile(File file) throws IOException {
-        StringBuffer fileData = new StringBuffer(1000);
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        char[] buf = new char[1024];
-        int numRead=0;
-        while((numRead=reader.read(buf)) != -1){
-            String readData = String.valueOf(buf, 0, numRead);
-            fileData.append(readData);
-            buf = new char[1024];
+ 
+    class ToastMessage implements Runnable {
+        public ToastMessage( Context ctx, String msg ) {
+            this.ctx = ctx;
+            this.msg = msg;
         }
-        reader.close();
-        return fileData.toString();
+
+        public void run() {
+            Toast.makeText( ctx, msg, Toast.LENGTH_SHORT).show();
+        }
+
+        Context ctx;
+        String msg;
     }
 
-    public static void writeFile(File file, String data) throws IOException {
-    	FileWriter fstream = new FileWriter(file);
-    	BufferedWriter out = new BufferedWriter(fstream);
-    	out.write(data);
-    	out.close();
+    class AddMessageTask implements Runnable {
+        AddMessageTask( String message ) {
+            this.message = message;
+        }
+
+        public void run() {
+            HashMap<String,String> entry = new HashMap<String,String>();
+            Calendar c = new GregorianCalendar();
+            StringBuffer b = new StringBuffer();
+            Formatter f = new Formatter( b );
+            f.format( "%04d/%02d/%02d %02d:%02d:%02d",
+                        c.get( Calendar.YEAR ),
+                        c.get( Calendar.MONTH ),
+                        c.get( Calendar.DAY_OF_MONTH ),
+                        c.get( Calendar.HOUR_OF_DAY ),
+                        c.get( Calendar.MINUTE ),
+                        c.get( Calendar.SECOND ) );
+            entry.put( "time",new String( b ) );
+            entry.put( "message", message );
+            list.add( entry );
+            messages.notifyDataSetChanged();
+        }
+
+        String message;
     }
 }

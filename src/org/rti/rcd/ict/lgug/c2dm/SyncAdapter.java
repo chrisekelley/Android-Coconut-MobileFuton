@@ -16,24 +16,16 @@
 
 package org.rti.rcd.ict.lgug.c2dm;
 
-import com.example.jumpnote.allshared.JsonRpcClient;
-import com.example.jumpnote.allshared.JsonRpcException;
-import com.example.jumpnote.allshared.JumpNoteProtocol;
-import com.example.jumpnote.android.JumpNoteContract;
-import com.example.jumpnote.android.ModelJava;
-import com.example.jumpnote.android.JumpNoteContract.Notes;
-import com.example.jumpnote.android.ModelJava.DeviceRegistration;
-import com.example.jumpnote.android.ModelJava.Note;
-import com.example.jumpnote.android.jsonrpc.AuthenticatedJsonRpcJavaClient;
-import com.example.jumpnote.android.jsonrpc.AuthenticatedJsonRpcJavaClient.InvalidAuthTokenException;
-import com.example.jumpnote.android.jsonrpc.AuthenticatedJsonRpcJavaClient.RequestedUserAuthenticationException;
-import com.example.jumpnote.javashared.Util;
-import com.google.android.c2dm.C2DMessaging;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import org.apache.http.auth.AuthenticationException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.rti.rcd.ict.lgug.C2DMReceiver;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -60,10 +52,17 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import com.example.jumpnote.allshared.JsonRpcClient;
+import com.example.jumpnote.allshared.JsonRpcException;
+import com.example.jumpnote.allshared.JumpNoteProtocol;
+import com.example.jumpnote.android.JumpNoteContract;
+import com.example.jumpnote.android.ModelJava;
+import com.example.jumpnote.android.ModelJava.DeviceRegistration;
+import com.example.jumpnote.android.jsonrpc.AuthenticatedJsonRpcJavaClient;
+import com.example.jumpnote.android.jsonrpc.AuthenticatedJsonRpcJavaClient.InvalidAuthTokenException;
+import com.example.jumpnote.android.jsonrpc.AuthenticatedJsonRpcJavaClient.RequestedUserAuthenticationException;
+import com.example.jumpnote.javashared.Util;
+import com.google.android.c2dm.C2DMessaging;
 
 /**
  * JumpNote SyncAdapter implementation. The sync adapter does the following:
