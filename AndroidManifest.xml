@@ -2,20 +2,65 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.rti.rcd.ict.lgug" android:versionCode="7" android:versionName="1.7">
 
     <uses-sdk android:minSdkVersion="8"/>
+    
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- required for accessing the device ID -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    
+    <!-- Cloud to Device Messaging permissions -->
+    <!-- Only this application can receive the messages and registration result --> 
+    <permission android:name="org.rti.rcd.ict.lgug.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+    <uses-permission android:name="org.rti.rcd.ict.lgug.permission.C2D_MESSAGE" />
+    <!-- This app has permission to register and receive message -->
+    <uses-permission android:name="org.rti.rcd.ict.lgug.permission.RECEIVE" />
 
     <application android:icon="@drawable/icon" android:label="@string/app_name">
-      
-        <activity android:name=".CoconutActivity" android:configChanges="keyboardHidden|orientation" android:label="@string/app_name" android:theme="@android:style/Theme.NoTitleBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
+	    <activity android:name=".CoconutActivity" android:configChanges="keyboardHidden|orientation" android:label="@string/app_name" android:theme="@android:style/Theme.NoTitleBar">
+	        <intent-filter>
+	            <action android:name="android.intent.action.MAIN"/>
+	            <category android:name="android.intent.category.LAUNCHER"/>
+	        </intent-filter>
+	    </activity>
+	
+	    <service android:name="com.couchbase.android.CouchbaseService" android:enabled="true" android:exported="false"/>
+	    
+	     <!-- In order to use the c2dm library, an
+               application must declare a class with the name C2DMReceiver, in its
+               own package, extending com.google.android.c2dm.C2DMBaseReceiver
 
-    <service android:name="com.couchbase.android.CouchbaseService" android:enabled="true" android:exported="false"/></application>
+               It must also include this section in the manifest, replacing
+                "com.google.android.apps.chrometophone" with its package name.
+           -->
+        <service android:name=".c2dm.C2DMReceiver" />
+        
+                <!-- Only Google services can send messages to the app. If this permission weren't set
+             any other app would be able to send messages to us. -->
+            <receiver android:name="org.rti.rcd.ict.lgug.c2dm.C2DMReceiver" android:permission="com.google.android.c2dm.permission.SEND">
+            <!-- Receive actual messages -->
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="org.rti.rcd.ict.lgug" />
+            </intent-filter>
+            <!-- Receive registration ids -->
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <category android:name="org.rti.rcd.ict.lgug" />
+            </intent-filter>
+        </receiver>
+        
+    </application>
     
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+        
+    
+        
+
 
 </manifest>
