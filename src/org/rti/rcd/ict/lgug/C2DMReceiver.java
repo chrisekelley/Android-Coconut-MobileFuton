@@ -106,19 +106,6 @@ public class C2DMReceiver extends C2DMBaseReceiver {
         notification.setLatestEventInfo(context, contentTitle, message, contentIntent);
 
         mNotificationManager.notify(HELLO_ID, notification);
-        
-        
-//        if (Config.C2DM_MESSAGE_SYNC.equals(message)) {
-//            if (accountName != null) {
-//                if (Log.isLoggable(TAG, Log.DEBUG)) {
-//                    Log.d(TAG, "Messaging request received for account " + accountName);
-//                }
-//
-//                ContentResolver.requestSync(
-//                        new Account(accountName, SyncAdapter.GOOGLE_ACCOUNT_TYPE),
-//                        JumpNoteContract.AUTHORITY, new Bundle());
-//            }
-//        }
     }
 
     /**
