@@ -31,3 +31,9 @@ Here is the code from [MobileFutonActivity](https://github.com/vetula/Android-Ta
 	launchFuton(url + "egra/_design/app/index.html" + param);
     
 I made some minor changes to Dale Harvey's code to load non-designDocs.
+
+## Notifications
+
+Push notifications are enabled. Register with the Google [C2DM](http://code.google.com/android/c2dm/) service.
+
+Major kudos to [My Life with Android blogs' Push service from Google](http://mylifewithandroid.blogspot.com/2010/10/push-service-from-google.html) and the Google [Jumpnote](http://code.google.com/p/jumpnote/) example.
