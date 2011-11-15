@@ -32,6 +32,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -45,6 +46,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -76,6 +78,7 @@ public class CoconutActivity extends Activity {
     private Account selectedAccount;
     private boolean registered;
     private static CoconutActivity coconutRef;
+    private ProgressDialog progressDialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -202,6 +205,17 @@ public class CoconutActivity extends Activity {
 		    
 		    Log.v(TAG, "host: " + host + " ip: " + ip);
 		    
+		    //progressDialog = ProgressDialog.show(CoconutActivity.this, "KIMS", "Loading. Please wait...", true);
+			progressDialog = new ProgressDialog(CoconutActivity.this);
+			//progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+			progressDialog.setTitle("KIMS");
+			progressDialog.setMessage("Loading. Please wait...");
+			progressDialog.setCancelable(false);
+		    progressDialog.setOwnerActivity(coconutRef);
+		    progressDialog.setIndeterminate(true);
+		    progressDialog.setProgress(0);
+		    progressDialog.show();
+		    
 		    try {
 				couch.installDatabase("mobilefuton.couch");
 			} catch (IOException e) {
@@ -232,6 +246,7 @@ public class CoconutActivity extends Activity {
 		    }
 			String couchAppUrl = url + "coconut/_design/coconut/index.html";
 			launchCouchApp(couchAppUrl);
+			progressDialog.dismiss();
 		}
 
 		@Override
@@ -277,9 +292,55 @@ public class CoconutActivity extends Activity {
 	}
 
 	private void launchCouchApp(String url) {
+		//getWindow().requestFeature(Window.FEATURE_PROGRESS);
+		final Activity activity = this;
+//		final ProgressDialog progressDialog = new ProgressDialog(coconutRef);
+//		progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+//		progressDialog.setTitle("KIMS");
+//		progressDialog.setMessage("Loading. Please wait...");
+//		progressDialog.setCancelable(false);
 		webView = new WebView(CoconutActivity.this);
 		webView.setWebChromeClient(new WebChromeClient());
+		
+		Log.d(TAG, "launchCouchApp started.  ");
+		webView.setWebChromeClient(new WebChromeClient() {
+            public void onProgressChanged(WebView view, int progress)
+            {
+            	// Activities and WebViews measure progress with different scales.
+				// The progress meter will automatically disappear when we reach 100%
+				//activity.setProgress(progress * 1000);
+				progressDialog.show();
+				activity.setProgress(progress * 1000);
+				coconutRef.setProgress(progress * 1000);
+				progressDialog.setProgress(progress * 1000);
+				progressDialog.incrementProgressBy(progress);
+				Log.d(TAG, "Progress: " + progress);
+
+				if(progress == 100 && progressDialog.isShowing()) {
+					Log.d(TAG, "Progress: DONE! " + progress);
+					progressDialog.dismiss();
+				}
+            }
+        });
 		webView.setWebViewClient(new CustomWebViewClient());
+//		webView.setWebViewClient(new CustomWebViewClient() {
+//			public void onProgressChanged(WebView view, int progress) {
+//				// Activities and WebViews measure progress with different scales.
+//				// The progress meter will automatically disappear when we reach 100%
+//				//activity.setProgress(progress * 1000);
+//				progressDialog.show();
+//				progressDialog.setProgress(0);
+//				//activity.setProgress(progress * 1000);
+//				progressDialog.incrementProgressBy(progress);
+//				Log.d(TAG, "Progress: " + progress);
+//
+//				if(progress == 100 && progressDialog.isShowing()) {
+//					Log.d(TAG, "Progress: DONE! " + progress);
+//					progressDialog.dismiss();
+//				}
+//			}
+//		});
+		
 		webView.getSettings().setJavaScriptEnabled(true);
 		webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
 		webView.getSettings().setDomStorageEnabled(true);

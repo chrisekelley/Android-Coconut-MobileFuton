@@ -15,6 +15,7 @@
     <!-- required for accessing the device ID -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
     
     <!-- Cloud to Device Messaging permissions -->
     <!-- Only this application can receive the messages and registration result --> 

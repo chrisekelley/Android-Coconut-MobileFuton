@@ -19,6 +19,9 @@ package org.rti.rcd.ict.lgug;
 import org.rti.rcd.ict.lgug.c2dm.Config;
 
 import android.accounts.Account;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -33,6 +36,8 @@ import com.google.android.c2dm.C2DMBaseReceiver;
  */
 public class C2DMReceiver extends C2DMBaseReceiver {
     static final String TAG = Config.makeLogTag(C2DMReceiver.class);
+    
+    private static final int HELLO_ID = 1;
 
     public C2DMReceiver() {
         super(Config.C2DM_SENDER);
@@ -72,8 +77,37 @@ public class C2DMReceiver extends C2DMBaseReceiver {
         String message = intent.getExtras().getString(Config.C2DM_MESSAGE_EXTRA);
         Log.d(TAG, "Messaging request received for account " + accountName);
         Log.d(TAG, "Message: " + message);
-        CoconutActivity c = CoconutActivity.getRef();
-        c.displayMessage( message );
+//        CoconutActivity c = CoconutActivity.getRef();
+//        c.displayMessage( message );
+        String ns = Context.NOTIFICATION_SERVICE;
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
+        int icon = R.drawable.icon;
+        CharSequence tickerText = "KIMS";
+        long when = System.currentTimeMillis();
+
+        Notification notification = new Notification(icon, tickerText, when);
+        notification.defaults |= Notification.DEFAULT_SOUND;
+        notification.defaults |= Notification.DEFAULT_VIBRATE;
+        
+        notification.flags = Notification.FLAG_AUTO_CANCEL;
+
+        notification.defaults |= Notification.DEFAULT_LIGHTS;
+        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+        notification.ledARGB = 0xff00ff00;
+        notification.ledOnMS = 300;
+        notification.ledOffMS = 1000;
+        
+        //Context context = getApplicationContext();
+        CharSequence contentTitle = "New KIMS Message";
+        //CharSequence contentText = "Hello World!";
+        Intent notificationIntent = new Intent(this, CoconutActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        notification.setLatestEventInfo(context, contentTitle, message, contentIntent);
+
+        mNotificationManager.notify(HELLO_ID, notification);
+        
+        
 //        if (Config.C2DM_MESSAGE_SYNC.equals(message)) {
 //            if (accountName != null) {
 //                if (Log.isLoggable(TAG, Log.DEBUG)) {
