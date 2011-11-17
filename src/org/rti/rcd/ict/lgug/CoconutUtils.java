@@ -15,16 +15,16 @@ import java.security.NoSuchAlgorithmException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.rti.rcd.ict.lgug.utils.AndCouch;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
 import android.util.Log;
 
-import com.daleharvey.mobilefuton.AndCouch;
 
 public class CoconutUtils extends Activity {
 	
-	protected static final String TAG = "CouchAppActivity";
+	protected static final String TAG = "CoconutActivity";
 
 	/**
 	 *  Will check for the existence of a design doc and if it does not exist,

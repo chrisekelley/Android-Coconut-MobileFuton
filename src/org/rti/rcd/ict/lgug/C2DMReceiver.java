@@ -16,8 +16,6 @@
 
 package org.rti.rcd.ict.lgug;
 
-import org.rti.rcd.ict.lgug.c2dm.Config;
-
 import android.accounts.Account;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -25,6 +23,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.c2dm.C2DMBaseReceiver;
 
@@ -58,16 +57,17 @@ public class C2DMReceiver extends C2DMBaseReceiver {
 
     @Override
     public void onUnregistered(Context context) {
-//        SharedPreferences prefs = Prefs.get(context);
-//        String deviceRegistrationID = prefs.getString("deviceRegistrationID", null);
-//        DeviceRegistrar.unregisterWithServer(context, deviceRegistrationID);
     	Log.d(TAG, "Unregistered app.");
+    	CoconutActivity c = CoconutActivity.getRef();
+        Account acc = c.getSelectedAccount();
+        NetworkCommunication.sendRegistrationId( acc, context, "" );
+        c.onUnregistered();
     }
 
     @Override
     public void onError(Context context, String errorId) {
-//        Toast.makeText(context, "Messaging registration error: " + errorId,
-//                Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Messaging registration error: " + errorId,
+                Toast.LENGTH_LONG).show();
         Log.d(TAG, "Messaging registration error: " + errorId);
     }
 
@@ -75,7 +75,7 @@ public class C2DMReceiver extends C2DMBaseReceiver {
     protected void onMessage(Context context, Intent intent) {
         String accountName = intent.getExtras().getString(Config.C2DM_ACCOUNT_EXTRA);
         String message = intent.getExtras().getString(Config.C2DM_MESSAGE_EXTRA);
-        Log.d(TAG, "Messaging request received for account " + accountName);
+        // Log.d(TAG, "Messaging request received for account " + accountName);
         Log.d(TAG, "Message: " + message);
 //        CoconutActivity c = CoconutActivity.getRef();
 //        c.displayMessage( message );
@@ -106,6 +106,23 @@ public class C2DMReceiver extends C2DMBaseReceiver {
         notification.setLatestEventInfo(context, contentTitle, message, contentIntent);
 
         mNotificationManager.notify(HELLO_ID, notification);
+    }
+    
+    
+    protected void onReceive(Context context, Intent intent) {
+        String accountName = intent.getExtras().getString(Config.C2DM_ACCOUNT_EXTRA);
+        String message = intent.getExtras().getString(Config.C2DM_MESSAGE_EXTRA);
+        if (Config.C2DM_MESSAGE_SYNC.equals(message)) {
+            if (accountName != null) {
+                if (Log.isLoggable(TAG, Log.DEBUG)) {
+                    Log.d(TAG, "Messaging request received for account " + accountName);
+                }
+                
+//                ContentResolver.requestSync(
+//                    new Account(accountName, SyncAdapter.GOOGLE_ACCOUNT_TYPE),
+//                    JumpNoteContract.AUTHORITY, new Bundle());
+            }
+        }
     }
 
     /**

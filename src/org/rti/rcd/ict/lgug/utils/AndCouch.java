@@ -1,4 +1,10 @@
-package com.daleharvey.mobilefuton;
+package org.rti.rcd.ict.lgug.utils;
+
+/*
+ * AndCouch is a very simple http wrapper library for CouchDB with minimal
+ * dependencies
+ * Code extracted from Dale Harvey's MobileFuton: https://github.com/daleharvey/Android-MobileFuton
+ */
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -10,14 +16,14 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class HTTPRequest {
+public class AndCouch {
 
 	public String[][] headers;
 	public JSONObject json;
 	public String result;
 	public int status;
 
-	public HTTPRequest(String[][] headers, JSONObject json, String result,
+	public AndCouch(String[][] headers, JSONObject json, String result,
 			int status) {
 		this.headers = headers;
 		this.json = json;
@@ -25,34 +31,34 @@ public class HTTPRequest {
 		this.status = status;
 	}
 
-	public static HTTPRequest post(String url, String data) throws JSONException {
+	public static AndCouch post(String url, String data) throws JSONException {
 		return post(url, data, new String[][]{});
 	}
 
-	public static HTTPRequest post(String url, String data, String[][] headers)
+	public static AndCouch post(String url, String data, String[][] headers)
 			throws JSONException {
-		return HTTPRequest.httpRequest("POST", url, data, headers);
+		return AndCouch.httpRequest("POST", url, data, headers);
 	}
 
-	public static HTTPRequest put(String url, String data) throws JSONException {
+	public static AndCouch put(String url, String data) throws JSONException {
 		return put(url, data, new String[][]{});
 	}
 
-	public static HTTPRequest put(String url, String data, String[][] headers)
+	public static AndCouch put(String url, String data, String[][] headers)
 			throws JSONException {
-		return HTTPRequest.httpRequest("PUT", url, data, headers);
+		return AndCouch.httpRequest("PUT", url, data, headers);
 	}
 
-	public static HTTPRequest get(String url) throws JSONException {
+	public static AndCouch get(String url) throws JSONException {
 		return get(url, new String[][] {});
 	}
 
-	public static HTTPRequest get(String url, String[][] headers)
+	public static AndCouch get(String url, String[][] headers)
 			throws JSONException {
-		return HTTPRequest.httpRequest("GET", url, null, headers);
+		return AndCouch.httpRequest("GET", url, null, headers);
 	}
 
-	public static HTTPRequest httpRequest(String method, String url,
+	public static AndCouch httpRequest(String method, String url,
 			String data, String[][] headers) throws JSONException {
 
 		StringBuffer sb = new StringBuffer();
@@ -75,10 +81,15 @@ public class HTTPRequest {
 			}
 
 			if (method != "GET" && data != null) {
-				c.setDoInput(true);
-				c.setRequestProperty("Content-Length",
-						Integer.toString(data.length()));
-				c.getOutputStream().write(data.getBytes(charEncoding));
+				try {
+					c.setDoInput(true);
+					c.setRequestProperty("Content-Length",
+							Integer.toString(data.length()));
+					c.getOutputStream().write(data.getBytes(charEncoding));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			c.connect();
@@ -112,7 +123,7 @@ public class HTTPRequest {
 			? new JSONObject()
 			: new JSONObject(sb.toString());
 
-		return new HTTPRequest(headers, json, sb.toString(), statusCode);
+		return new AndCouch(headers, json, sb.toString(), statusCode);
 	};
 
 	@Override

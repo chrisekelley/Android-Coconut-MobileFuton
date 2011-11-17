@@ -1,20 +1,10 @@
 package org.rti.rcd.ict.lgug;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -23,10 +13,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 import org.json.JSONException;
-import org.json.JSONObject;
-import org.rti.rcd.ict.lgug.Push.AddMessageTask;
-import org.rti.rcd.ict.lgug.Push.ToastMessage;
-import org.rti.rcd.ict.lgug.c2dm.Config;
+import org.rti.rcd.ict.lgug.utils.HTTPRequest;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -37,7 +24,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -46,7 +32,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -56,14 +41,17 @@ import android.widget.Toast;
 
 import com.couchbase.android.CouchbaseMobile;
 import com.couchbase.android.ICouchbaseDelegate;
-import com.daleharvey.mobilefuton.AndCouch;
 import com.google.android.c2dm.C2DMessaging;
 
+/**
+ * Major kudos to Dale Harvey's MobileFuton: https://github.com/daleharvey/Android-MobileFuton
+ *
+ */
 public class CoconutActivity extends Activity {
 
 	private final CoconutActivity self = this;
-	protected static final String TAG = "CouchAppActivity";
-    private static final String LOG_TAG = "CouchAppActivity";
+	protected static final String TAG = "CoconutActivity";
+    private static final String LOG_TAG = "CoconutActivity";
 
 	private static final int ACTIVITY_ACCOUNTS = 1;
     private static final int MENU_ACCOUNTS = 2;    
@@ -233,14 +221,24 @@ public class CoconutActivity extends Activity {
 			    	couch.installDatabase(sourceDb);
 			    	source.renameTo(destination);
 		    	}
-//		    	boolean autoSyncEnabled = !C2DMessaging.getRegistrationId(getBaseContext()).equals("");
-//
-//		    	if (!autoSyncEnabled) {
-//		    		Log.i(TAG, "Registering with C2DMessaging");
-//		    		C2DMessaging.register(getBaseContext(), Config.C2DM_SENDER);
-//		    		String registrationId = C2DMessaging.getRegistrationId(getBaseContext());
-//		    		Log.d(TAG, "registrationId: " + registrationId);
-//		    	}
+		    	String localDb = "http://localhost:5985/coconut";
+		    	String localReplicationDbUrl = "http://localhost:5985/_replicate";
+		    	String replicationMasterUrl = "http://admin:luvcouch@192.168.0.3:5984/coconut";
+		    	String replicationDataFromMaster = "{\"_id\": \"to_master\",\"target\":\"" + localDb + "\",\"source\":\"" + replicationMasterUrl + "\", \"continuous\": true}";
+		    	String replicationDataToMaster = "{\"_id\": \"to_master\",\"target\":\"" + replicationMasterUrl + "\",\"source\":\"" + localDb + "\", \"continuous\": true}";
+		    
+		    	try {
+					HTTPRequest.post(localReplicationDbUrl, replicationDataFromMaster);
+				} catch (JSONException e) {
+					Log.d(TAG, "Problem installing replication target FromMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+					e.printStackTrace();
+				}
+		    	try {
+		    		HTTPRequest.post(localReplicationDbUrl, replicationDataToMaster);
+		    	} catch (JSONException e) {
+		    		Log.d(TAG, "Problem installing replication target ToMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+		    		e.printStackTrace();
+		    	}
 		    } catch (IOException e) {
 		    	e.printStackTrace();
 		    }

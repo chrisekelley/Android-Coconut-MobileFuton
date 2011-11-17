@@ -30,6 +30,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
+/**
+ * Code from example at http://mylifewithandroid.blogspot.com/2010/10/push-service-from-google.html
+ */
 public class NetworkCommunication {
     private static final int REGISTRATION_TIMEOUT = 30 * 1000; // ms
     private static final String TOKEN_URI =

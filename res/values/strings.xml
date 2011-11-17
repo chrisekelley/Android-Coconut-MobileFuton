@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, CouchAppActivity!</string>
+    <string name="hello">Hello World, CoconutActivity!</string>
     <string name="app_name">KIMS</string>
     <string name="main_no_items">No messages</string>
     <string name="accounts_no_accounts">No accounts</string>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
     package="org.rti.rcd.ict.lgug" 
-    android:versionCode="2011111413"
+    android:versionCode="2011111614"
     android:versionName="0.6">
     
     <uses-permission android:name="android.permission.INTERNET" />
@@ -37,7 +37,7 @@
 	
 	    <service android:name="com.couchbase.android.CouchbaseService" android:enabled="true" android:exported="false"/>
 	    
-	    <activity android:name="AccountSelector"
+	    <activity android:name=".AccountSelector"
                   android:label="@string/label_account_selector"/>
         
 	     <!-- In order to use the c2dm library, an

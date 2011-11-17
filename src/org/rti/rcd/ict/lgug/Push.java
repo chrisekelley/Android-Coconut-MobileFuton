@@ -21,6 +21,10 @@ import java.util.GregorianCalendar;
 import java.util.Calendar;
 import java.util.Formatter;
 
+/**
+ * Code from example at http://mylifewithandroid.blogspot.com/2010/10/push-service-from-google.html
+ *
+ */
 public class Push extends ListActivity
 {
     private static final int ACTIVITY_ACCOUNTS = 1;

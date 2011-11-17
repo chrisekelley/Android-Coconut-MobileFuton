@@ -10,6 +10,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import java.util.ArrayList;
 
+/**
+ * Code from example at http://mylifewithandroid.blogspot.com/2010/10/push-service-from-google.html
+ */
 public class AccountSelector extends ListActivity {
     @Override
     public void onCreate(Bundle icicle) {
