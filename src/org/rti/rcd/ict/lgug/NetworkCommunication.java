@@ -5,6 +5,8 @@ import android.accounts.AccountManager;
 import android.accounts.OperationCanceledException;
 import android.accounts.AuthenticatorException;
 import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.res.Resources;
 import android.util.Log;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.HttpEntity;    
@@ -27,8 +29,10 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * Code from example at http://mylifewithandroid.blogspot.com/2010/10/push-service-from-google.html
@@ -36,8 +40,7 @@ import java.util.ArrayList;
 public class NetworkCommunication {
     private static final int REGISTRATION_TIMEOUT = 30 * 1000; // ms
     private static final String TOKEN_URI =
-                Config.APP_BASE_URI+
-                "/token";
+    		CoconutActivity.PUSH_SERVER_URL + "/token";
     private static final String LOG_TAG = "Push_NetworkComm";
 
     private static DefaultHttpClient httpClient = null;

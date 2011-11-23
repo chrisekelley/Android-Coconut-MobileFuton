@@ -2,6 +2,7 @@ package org.rti.rcd.ict.lgug;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -11,6 +12,7 @@ import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Properties;
 
 import org.json.JSONException;
 import org.rti.rcd.ict.lgug.utils.HTTPRequest;
@@ -24,6 +26,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -67,6 +70,27 @@ public class CoconutActivity extends Activity {
     private boolean registered;
     private static CoconutActivity coconutRef;
     private ProgressDialog progressDialog;
+ // Network communication
+ // For app engine SDK
+    public static String PUSH_SERVER_URL;
+    public static String C2DM_SENDER;
+
+
+	public static String getC2DM_SENDER() {
+		return C2DM_SENDER;
+	}
+
+	public static void setC2DM_SENDER(String c2dm_SENDER) {
+		C2DM_SENDER = c2dm_SENDER;
+	}
+
+	public static String getPUSH_SERVER_URL() {
+		return PUSH_SERVER_URL;
+	}
+
+	public static void setPUSH_SERVER_URL(String pUSH_SERVER_URL) {
+		PUSH_SERVER_URL = pUSH_SERVER_URL;
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -170,7 +194,7 @@ public class CoconutActivity extends Activity {
 	            unregister();
 	        else {
 	            Log.d( LOG_TAG, "register()" );
-	            C2DMessaging.register( this, Config.C2DM_SENDER );
+	            C2DMessaging.register( this, C2DM_SENDER );
 	            Log.d( LOG_TAG, "register() done" );
 	        }
 	    }
@@ -193,10 +217,10 @@ public class CoconutActivity extends Activity {
 		    
 		    Log.v(TAG, "host: " + host + " ip: " + ip);
 		    
-		    //progressDialog = ProgressDialog.show(CoconutActivity.this, "KIMS", "Loading. Please wait...", true);
+		    //progressDialog = ProgressDialog.show(CoconutActivity.this, "UDIMS", "Loading. Please wait...", true);
 			progressDialog = new ProgressDialog(CoconutActivity.this);
 			//progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			progressDialog.setTitle("KIMS");
+			progressDialog.setTitle("UDIMS");
 			progressDialog.setMessage("Loading. Please wait...");
 			progressDialog.setCancelable(false);
 		    progressDialog.setOwnerActivity(coconutRef);
@@ -221,12 +245,37 @@ public class CoconutActivity extends Activity {
 			    	couch.installDatabase(sourceDb);
 			    	source.renameTo(destination);
 		    	}
-		    	String localDb = "http://localhost:5985/coconut";
-		    	String localReplicationDbUrl = "http://localhost:5985/_replicate";
-		    	String replicationMasterUrl = "http://admin:luvcouch@192.168.0.3:5984/coconut";
-		    	String replicationDataFromMaster = "{\"_id\": \"to_master\",\"target\":\"" + localDb + "\",\"source\":\"" + replicationMasterUrl + "\", \"continuous\": true}";
-		    	String replicationDataToMaster = "{\"_id\": \"to_master\",\"target\":\"" + replicationMasterUrl + "\",\"source\":\"" + localDb + "\", \"continuous\": true}";
-		    
+		    	
+		    	Properties properties = new Properties();
+
+		    	try {
+		    		InputStream rawResource = getResources().openRawResource(R.raw.coconut);
+		    		properties.load(rawResource);
+		    		System.out.println("The properties are now loaded");
+		    		System.out.println("properties: " + properties);
+		    	} catch (Resources.NotFoundException e) {
+		    		System.err.println("Did not find raw resource: " + e);
+		    	} catch (IOException e) {
+		    		System.err.println("Failed to open microlog property file");
+		    	}
+		    	
+		    	if (PUSH_SERVER_URL == null) {
+		    		String pushServerUrl = properties.getProperty("push_server_url");
+		    		setPUSH_SERVER_URL(pushServerUrl);
+		    		Log.d(TAG, "PUSH_SERVER_URL: " + PUSH_SERVER_URL);
+		    	}
+		    	if (C2DM_SENDER == null) {
+		    		String c2dmSender = properties.getProperty("c2dm_sender");
+		    		setC2DM_SENDER(c2dmSender);
+		    		Log.d(TAG, "C2DM_SENDER: " + C2DM_SENDER);
+		    	}
+		    	String localDb = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/" +  properties.getProperty("app_db");
+		    	Log.d(TAG, "localDb: " + localDb);
+		    	String localReplicationDbUrl = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/_replicate";
+		    	String replicationMasterUrl = "http://" + properties.getProperty("master_server") + "/coconut";
+		    	String replicationDataFromMaster = "{\"_id\": \"continuous_from_master\",\"target\":\"" + localDb + "\",\"source\":\"" + replicationMasterUrl + "\", \"continuous\": true}";
+		    	String replicationDataToMaster = "{\"_id\": \"continuous_to_master\",\"target\":\"" + replicationMasterUrl + "\",\"source\":\"" + localDb + "\", \"continuous\": true}";
+		    	
 		    	try {
 					HTTPRequest.post(localReplicationDbUrl, replicationDataFromMaster);
 				} catch (JSONException e) {
@@ -294,7 +343,7 @@ public class CoconutActivity extends Activity {
 		final Activity activity = this;
 //		final ProgressDialog progressDialog = new ProgressDialog(coconutRef);
 //		progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-//		progressDialog.setTitle("KIMS");
+//		progressDialog.setTitle("UDIMS");
 //		progressDialog.setMessage("Loading. Please wait...");
 //		progressDialog.setCancelable(false);
 		webView = new WebView(CoconutActivity.this);

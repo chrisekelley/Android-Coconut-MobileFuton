@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -30,35 +31,35 @@ public class HTTPRequest {
 		this.status = status;
 	}
 
-	public static HTTPRequest post(String url, String data) throws JSONException {
+	public static HTTPRequest post(String url, String data) throws JSONException, ConnectException {
 		return post(url, data, new String[][]{});
 	}
 
 	public static HTTPRequest post(String url, String data, String[][] headers)
-			throws JSONException {
+			throws JSONException, ConnectException {
 		return HTTPRequest.httpRequest("POST", url, data, headers);
 	}
 
-	public static HTTPRequest put(String url, String data) throws JSONException {
+	public static HTTPRequest put(String url, String data) throws JSONException, ConnectException {
 		return put(url, data, new String[][]{});
 	}
 
 	public static HTTPRequest put(String url, String data, String[][] headers)
-			throws JSONException {
+			throws JSONException, ConnectException {
 		return HTTPRequest.httpRequest("PUT", url, data, headers);
 	}
 
-	public static HTTPRequest get(String url) throws JSONException {
+	public static HTTPRequest get(String url) throws JSONException, ConnectException {
 		return get(url, new String[][] {});
 	}
 
 	public static HTTPRequest get(String url, String[][] headers)
-			throws JSONException {
+			throws JSONException, ConnectException {
 		return HTTPRequest.httpRequest("GET", url, null, headers);
 	}
 
 	public static HTTPRequest httpRequest(String method, String url,
-			String data, String[][] headers) throws JSONException {
+			String data, String[][] headers) throws JSONException, ConnectException {
 
 		StringBuffer sb = new StringBuffer();
 		int statusCode = 0;

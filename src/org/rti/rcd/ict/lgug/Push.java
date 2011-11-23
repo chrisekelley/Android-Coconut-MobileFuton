@@ -125,7 +125,7 @@ public class Push extends ListActivity
             unregister();
         else {
             Log.d( LOG_TAG, "register()" );
-            C2DMessaging.register( this, Config.C2DM_SENDER );
+            C2DMessaging.register( this, CoconutActivity.C2DM_SENDER );
             Log.d( LOG_TAG, "register() done" );
         }
     }

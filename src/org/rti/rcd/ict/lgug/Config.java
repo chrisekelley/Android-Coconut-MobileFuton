@@ -19,14 +19,14 @@ package org.rti.rcd.ict.lgug;
 public class Config {
 
 // App ID for C2DM server registrations
-    public static final String C2DM_SENDER = "ugnotify@gmail.com";
+    //public static final String C2DM_SENDER = "ugnotify@gmail.com";
     public static final String C2DM_ACCOUNT_EXTRA = "account_name";
     public static final String C2DM_MESSAGE_EXTRA = "message";
     public static final String C2DM_MESSAGE_SYNC = "sync";
 
 // Network communication
 // For app engine SDK
-    public static final String APP_BASE_URI = "http://192.168.0.3:8080";
+    //public static final String PUSH_SERVER_URL = "http://192.168.0.3:8080";
 
 	@SuppressWarnings("unchecked")
 	public static String makeLogTag(Class cls) {

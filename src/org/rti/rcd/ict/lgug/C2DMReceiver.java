@@ -16,12 +16,21 @@
 
 package org.rti.rcd.ict.lgug;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.ConnectException;
+import java.util.Properties;
+
+import org.json.JSONException;
+import org.rti.rcd.ict.lgug.utils.HTTPRequest;
+
 import android.accounts.Account;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -39,7 +48,7 @@ public class C2DMReceiver extends C2DMBaseReceiver {
     private static final int HELLO_ID = 1;
 
     public C2DMReceiver() {
-        super(Config.C2DM_SENDER);
+        super(CoconutActivity.C2DM_SENDER);
     }
     
     @Override
@@ -76,13 +85,12 @@ public class C2DMReceiver extends C2DMBaseReceiver {
         String accountName = intent.getExtras().getString(Config.C2DM_ACCOUNT_EXTRA);
         String message = intent.getExtras().getString(Config.C2DM_MESSAGE_EXTRA);
         // Log.d(TAG, "Messaging request received for account " + accountName);
-        Log.d(TAG, "Message: " + message);
 //        CoconutActivity c = CoconutActivity.getRef();
 //        c.displayMessage( message );
         String ns = Context.NOTIFICATION_SERVICE;
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
         int icon = R.drawable.icon;
-        CharSequence tickerText = "KIMS";
+        CharSequence tickerText = "UDIMS";
         long when = System.currentTimeMillis();
 
         Notification notification = new Notification(icon, tickerText, when);
@@ -98,10 +106,45 @@ public class C2DMReceiver extends C2DMBaseReceiver {
         notification.ledOffMS = 1000;
         
         //Context context = getApplicationContext();
-        CharSequence contentTitle = "New KIMS Message";
+        Log.d(TAG, "Triggering once_off replication upon receipt of notification: " + message);
+        Properties properties = new Properties();
+        try {
+    		InputStream rawResource = getResources().openRawResource(R.raw.coconut);
+    		properties.load(rawResource);
+    		System.out.println("The properties are now loaded");
+    		System.out.println("properties: " + properties);
+    	} catch (Resources.NotFoundException e) {
+    		System.err.println("Did not find raw resource: " + e);
+    	} catch (IOException e) {
+    		System.err.println("Failed to open microlog property file");
+    	}
+    	String localDb = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/" +  properties.getProperty("app_db");
+    	Log.d(TAG, "localDb: " + localDb);
+    	String localReplicationDbUrl = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/_replicate";
+    	String replicationMasterUrl = "http://" + properties.getProperty("master_server") + "/coconut";
+    	String replicationDataFromMaster = "{\"_id\": \"once_off_from_master\",\"target\":\"" + localDb + "\",\"source\":\"" + replicationMasterUrl + "\"}";
+    	String replicationDataToMaster = "{\"_id\": \"once_off_to_master\",\"target\":\"" + replicationMasterUrl + "\",\"source\":\"" + localDb + "\"}";
+    
+    	try {
+			HTTPRequest.post(localReplicationDbUrl, replicationDataFromMaster);
+		} catch (JSONException e) {
+			Log.d(TAG, "Problem installing replication target FromMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+			e.printStackTrace();
+		} catch (ConnectException e) {
+			Log.d(TAG, "Unable to connect to replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+		}
+    	try {
+    		HTTPRequest.post(localReplicationDbUrl, replicationDataToMaster);
+    	} catch (JSONException e) {
+    		Log.d(TAG, "Problem installing replication target ToMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+    		e.printStackTrace();
+    	} catch (ConnectException e) {
+    		Log.d(TAG, "Unable to connect to replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+		}
+        CharSequence contentTitle = "New UDIMS Message";
         //CharSequence contentText = "Hello World!";
         Intent notificationIntent = new Intent(this, CoconutActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         notification.setLatestEventInfo(context, contentTitle, message, contentIntent);
 
