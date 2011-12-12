@@ -32,9 +32,11 @@ public final class R {
     public static final class string {
         public static final int accounts_no_accounts=0x7f050003;
         public static final int app_name=0x7f050001;
+        public static final int copy_text=0x7f050007;
         public static final int hello=0x7f050000;
         public static final int label_account_selector=0x7f050004;
         public static final int main_no_items=0x7f050002;
         public static final int menu_accounts=0x7f050005;
+        public static final int menu_accounts_description=0x7f050006;
     }
 }

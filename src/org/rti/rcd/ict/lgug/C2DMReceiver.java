@@ -82,15 +82,16 @@ public class C2DMReceiver extends C2DMBaseReceiver {
 
     @Override
     protected void onMessage(Context context, Intent intent) {
-        String accountName = intent.getExtras().getString(Config.C2DM_ACCOUNT_EXTRA);
+        //String accountName = intent.getExtras().getString(Config.C2DM_ACCOUNT_EXTRA);
+        String accountName = intent.getStringExtra( "account" );
         String message = intent.getExtras().getString(Config.C2DM_MESSAGE_EXTRA);
-        // Log.d(TAG, "Messaging request received for account " + accountName);
+        Log.d(TAG, "Messaging request received for account " + accountName);
 //        CoconutActivity c = CoconutActivity.getRef();
 //        c.displayMessage( message );
         String ns = Context.NOTIFICATION_SERVICE;
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
         int icon = R.drawable.icon;
-        CharSequence tickerText = "UDIMS";
+        CharSequence tickerText = "Olutindo";
         long when = System.currentTimeMillis();
 
         Notification notification = new Notification(icon, tickerText, when);
@@ -125,23 +126,23 @@ public class C2DMReceiver extends C2DMBaseReceiver {
     	String replicationDataFromMaster = "{\"_id\": \"once_off_from_master\",\"target\":\"" + localDb + "\",\"source\":\"" + replicationMasterUrl + "\"}";
     	String replicationDataToMaster = "{\"_id\": \"once_off_to_master\",\"target\":\"" + replicationMasterUrl + "\",\"source\":\"" + localDb + "\"}";
     
-    	try {
-			HTTPRequest.post(localReplicationDbUrl, replicationDataFromMaster);
-		} catch (JSONException e) {
-			Log.d(TAG, "Problem installing replication target FromMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
-			e.printStackTrace();
-		} catch (ConnectException e) {
-			Log.d(TAG, "Unable to connect to replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
-		}
-    	try {
-    		HTTPRequest.post(localReplicationDbUrl, replicationDataToMaster);
-    	} catch (JSONException e) {
-    		Log.d(TAG, "Problem installing replication target ToMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
-    		e.printStackTrace();
-    	} catch (ConnectException e) {
-    		Log.d(TAG, "Unable to connect to replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
-		}
-        CharSequence contentTitle = "New UDIMS Message";
+//    	try {
+//			HTTPRequest.post(localReplicationDbUrl, replicationDataFromMaster);
+//		} catch (JSONException e) {
+//			Log.d(TAG, "Problem installing replication target FromMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+//			e.printStackTrace();
+//		} catch (ConnectException e) {
+//			Log.d(TAG, "Unable to connect to replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+//		}
+//    	try {
+//    		HTTPRequest.post(localReplicationDbUrl, replicationDataToMaster);
+//    	} catch (JSONException e) {
+//    		Log.d(TAG, "Problem installing replication target ToMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+//    		e.printStackTrace();
+//    	} catch (ConnectException e) {
+//    		Log.d(TAG, "Unable to connect to replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+//		}
+        CharSequence contentTitle = "New Olutindo Message";
         //CharSequence contentText = "Hello World!";
         Intent notificationIntent = new Intent(this, CoconutActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);

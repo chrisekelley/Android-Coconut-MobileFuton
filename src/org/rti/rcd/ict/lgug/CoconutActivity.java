@@ -3,6 +3,7 @@ package org.rti.rcd.ict.lgug;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -27,6 +28,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -58,6 +60,7 @@ public class CoconutActivity extends Activity {
 
 	private static final int ACTIVITY_ACCOUNTS = 1;
     private static final int MENU_ACCOUNTS = 2;    
+    private static final int COPY_TEXT = 3;    
 
 	private CouchbaseMobile couch;
 	private ServiceConnection couchServiceConnection;
@@ -107,20 +110,23 @@ public class CoconutActivity extends Activity {
                                         Intent extras ) {
         super.onActivityResult( requestCode, resultCode, extras);
         switch(requestCode) {
-            case ACTIVITY_ACCOUNTS: {
-                    String accountName = extras.getStringExtra( "account" );
-                    selectedAccount = getAccountFromAccountName( accountName );
-                    Toast.makeText(this, "Account selected: "+accountName, Toast.LENGTH_SHORT).show();
-                    if( selectedAccount != null )
-                        register();
-                }
-                break;
+        case ACTIVITY_ACCOUNTS: {
+        	if (resultCode == RESULT_OK) {
+        		String accountName = extras.getStringExtra( "account" );
+        		selectedAccount = getAccountFromAccountName( accountName );
+        		Toast.makeText(this, "Account selected: "+accountName, Toast.LENGTH_SHORT).show();
+        		if( selectedAccount != null )
+        			register();
+        	} 
+        }
+        break;
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean result = super.onCreateOptionsMenu(menu);
+        menu.add( Menu.NONE, COPY_TEXT, Menu.NONE, R.string.copy_text );
         menu.add( Menu.NONE, MENU_ACCOUNTS, Menu.NONE, R.string.menu_accounts );
         return result;
     }
@@ -136,8 +142,30 @@ public class CoconutActivity extends Activity {
                     startActivityForResult(i, ACTIVITY_ACCOUNTS );
                     return true;
                 }
+            case COPY_TEXT: {
+                Toast.makeText(getApplicationContext(), "Select Text", Toast.LENGTH_SHORT).show();
+                //selectAndCopyText();
+                emulateShiftHeld(webView);
+                return true;
+            }
         }
         return false;
+    }
+    
+    // kudos: http://stackoverflow.com/questions/6058843/android-how-to-select-texts-from-webview    
+    private void emulateShiftHeld(WebView view)
+    {
+        try
+        {
+            KeyEvent shiftPressEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
+                                                    KeyEvent.KEYCODE_SHIFT_LEFT, 0, 0);
+            shiftPressEvent.dispatch(view);
+            Toast.makeText(this, "Now click the text you highlighted.", Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e)
+        {
+            Log.e("dd", "Exception in emulateShiftHeld()", e);
+        }
     }
     
     public static CoconutActivity getRef() {
@@ -217,10 +245,9 @@ public class CoconutActivity extends Activity {
 		    
 		    Log.v(TAG, "host: " + host + " ip: " + ip);
 		    
-		    //progressDialog = ProgressDialog.show(CoconutActivity.this, "UDIMS", "Loading. Please wait...", true);
 			progressDialog = new ProgressDialog(CoconutActivity.this);
 			//progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			progressDialog.setTitle("UDIMS");
+			progressDialog.setTitle("Olutindo");
 			progressDialog.setMessage("Loading. Please wait...");
 			progressDialog.setCancelable(false);
 		    progressDialog.setOwnerActivity(coconutRef);
@@ -343,7 +370,7 @@ public class CoconutActivity extends Activity {
 		final Activity activity = this;
 //		final ProgressDialog progressDialog = new ProgressDialog(coconutRef);
 //		progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-//		progressDialog.setTitle("UDIMS");
+//		progressDialog.setTitle("Olutindo");
 //		progressDialog.setMessage("Loading. Please wait...");
 //		progressDialog.setCancelable(false);
 		webView = new WebView(CoconutActivity.this);
@@ -417,7 +444,12 @@ public class CoconutActivity extends Activity {
 	private class CustomWebViewClient extends WebViewClient {
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			view.loadUrl(url);
+			if (url.startsWith("tel:")) {
+				Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
+				startActivity(intent);
+			} else if (url.startsWith("http:") || url.startsWith("https:")) {
+				view.loadUrl(url);
+			}
 			return true;
 		}
 	}

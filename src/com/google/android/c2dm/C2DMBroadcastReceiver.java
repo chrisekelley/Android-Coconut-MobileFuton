@@ -2,7 +2,6 @@
  */
 package com.google.android.c2dm;
 
-import org.rti.rcd.ict.lgug.C2DMReceiver;
 import org.rti.rcd.ict.lgug.Config;
 
 import android.app.Activity;
@@ -19,7 +18,7 @@ import android.util.Log;
  * 
  */
 public class C2DMBroadcastReceiver extends BroadcastReceiver {
-	static final String TAG = Config.makeLogTag(C2DMReceiver.class);
+	static final String TAG = Config.makeLogTag(C2DMBroadcastReceiver.class);
 	
     @Override
     public final void onReceive(Context context, Intent intent) {
@@ -27,6 +26,6 @@ public class C2DMBroadcastReceiver extends BroadcastReceiver {
         C2DMBaseReceiver.runIntentInService(context, intent);
         setResult(Activity.RESULT_OK, null /* data */, null /* extra */); 
         String message = intent.getExtras().getString(Config.C2DM_MESSAGE_EXTRA);
-        Log.d(TAG, "Message from BroadcastReceiver: " + message);
+        Log.d(TAG, "Message from C2DMBroadcastReceiver: " + message);
     }
 }
