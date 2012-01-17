@@ -12,3 +12,7 @@ libs/armeabi
 Couchbase.zip
 couchbase.xml
 
+
+local-config/coconut.properties
+
+local-config/local.properties
