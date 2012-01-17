@@ -17,3 +17,9 @@ local-config/coconut.properties
 
 local-config/local.properties
 res/raw/coconut.properties
+
+assets/CouchbaseVersion.txt
+
+libs/OtpErlang-r14b03.jar
+
+libs/couchbase-2.0.0-dp-31.jar

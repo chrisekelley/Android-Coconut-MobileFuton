@@ -105,7 +105,7 @@ public class C2DMReceiver extends C2DMBaseReceiver {
         notification.ledARGB = 0xff00ff00;
         notification.ledOnMS = 300;
         notification.ledOffMS = 1000;
-        
+
         //Context context = getApplicationContext();
         Log.d(TAG, "Triggering once_off replication upon receipt of notification: " + message);
         Properties properties = new Properties();

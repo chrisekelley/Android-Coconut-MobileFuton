@@ -291,29 +291,32 @@ public class CoconutActivity extends Activity {
 		    		setPUSH_SERVER_URL(pushServerUrl);
 		    		Log.d(TAG, "PUSH_SERVER_URL: " + PUSH_SERVER_URL);
 		    	}
-		    	if (C2DM_SENDER == null) {
-		    		String c2dmSender = properties.getProperty("c2dm_sender");
-		    		setC2DM_SENDER(c2dmSender);
-		    		Log.d(TAG, "C2DM_SENDER: " + C2DM_SENDER);
-		    	}
-		    	String localDb = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/" +  properties.getProperty("app_db");
-		    	Log.d(TAG, "localDb: " + localDb);
-		    	String localReplicationDbUrl = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/_replicate";
-		    	String replicationMasterUrl = "http://" + properties.getProperty("master_server") + "/coconut";
-		    	String replicationDataFromMaster = "{\"_id\": \"continuous_from_master\",\"target\":\"" + localDb + "\",\"source\":\"" + replicationMasterUrl + "\", \"continuous\": true}";
-		    	String replicationDataToMaster = "{\"_id\": \"continuous_to_master\",\"target\":\"" + replicationMasterUrl + "\",\"source\":\"" + localDb + "\", \"continuous\": true}";
-		    	
-		    	try {
-					HTTPRequest.post(localReplicationDbUrl, replicationDataFromMaster);
-				} catch (JSONException e) {
-					Log.d(TAG, "Problem installing replication target FromMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
-					e.printStackTrace();
-				}
-		    	try {
-		    		HTTPRequest.post(localReplicationDbUrl, replicationDataToMaster);
-		    	} catch (JSONException e) {
-		    		Log.d(TAG, "Problem installing replication target ToMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
-		    		e.printStackTrace();
+		    	// If PUSH_SERVER_URL is still null, don't configure C2DM or replication.
+		    	if (PUSH_SERVER_URL == null) {
+		    		if (C2DM_SENDER == null) {
+		    			String c2dmSender = properties.getProperty("c2dm_sender");
+		    			setC2DM_SENDER(c2dmSender);
+		    			Log.d(TAG, "C2DM_SENDER: " + C2DM_SENDER);
+		    		}
+		    		String localDb = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/" +  properties.getProperty("app_db");
+		    		Log.d(TAG, "localDb: " + localDb);
+		    		String localReplicationDbUrl = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/_replicate";
+		    		String replicationMasterUrl = "http://" + properties.getProperty("master_server") + "/coconut";
+		    		String replicationDataFromMaster = "{\"_id\": \"continuous_from_master\",\"target\":\"" + localDb + "\",\"source\":\"" + replicationMasterUrl + "\", \"continuous\": true}";
+		    		String replicationDataToMaster = "{\"_id\": \"continuous_to_master\",\"target\":\"" + replicationMasterUrl + "\",\"source\":\"" + localDb + "\", \"continuous\": true}";
+
+		    		try {
+		    			HTTPRequest.post(localReplicationDbUrl, replicationDataFromMaster);
+		    		} catch (JSONException e) {
+		    			Log.d(TAG, "Problem installing replication target FromMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+		    			e.printStackTrace();
+		    		}
+		    		try {
+		    			HTTPRequest.post(localReplicationDbUrl, replicationDataToMaster);
+		    		} catch (JSONException e) {
+		    			Log.d(TAG, "Problem installing replication target ToMaster. replicationMasterUrl: " + replicationMasterUrl + " Error:" + e.getMessage());
+		    			e.printStackTrace();
+		    		}
 		    	}
 		    } catch (IOException e) {
 		    	e.printStackTrace();
