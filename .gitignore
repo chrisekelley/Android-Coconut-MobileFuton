@@ -16,3 +16,4 @@ couchbase.xml
 local-config/coconut.properties
 
 local-config/local.properties
+res/raw/coconut.properties
