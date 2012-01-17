@@ -19,7 +19,6 @@ package org.rti.rcd.ict.lgug;
 public class Config {
 
 // App ID for C2DM server registrations
-    //public static final String C2DM_SENDER = "ugnotify@gmail.com";
     public static final String C2DM_ACCOUNT_EXTRA = "account_name";
     public static final String C2DM_MESSAGE_EXTRA = "message";
     public static final String C2DM_MESSAGE_SYNC = "sync";
