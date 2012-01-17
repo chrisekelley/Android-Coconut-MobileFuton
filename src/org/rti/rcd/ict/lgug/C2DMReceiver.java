@@ -121,11 +121,12 @@ public class C2DMReceiver extends C2DMBaseReceiver {
     	}
     	String localDb = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/" +  properties.getProperty("app_db");
     	Log.d(TAG, "localDb: " + localDb);
-    	String localReplicationDbUrl = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/_replicate";
-    	String replicationMasterUrl = "http://" + properties.getProperty("master_server") + "/coconut";
-    	String replicationDataFromMaster = "{\"_id\": \"once_off_from_master\",\"target\":\"" + localDb + "\",\"source\":\"" + replicationMasterUrl + "\"}";
-    	String replicationDataToMaster = "{\"_id\": \"once_off_to_master\",\"target\":\"" + replicationMasterUrl + "\",\"source\":\"" + localDb + "\"}";
-    
+    	
+//    	String localReplicationDbUrl = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/_replicate";
+//    	String replicationMasterUrl = "http://" + properties.getProperty("master_server") + "/coconut";
+//    	String replicationDataFromMaster = "{\"_id\": \"once_off_from_master\",\"target\":\"" + localDb + "\",\"source\":\"" + replicationMasterUrl + "\"}";
+//    	String replicationDataToMaster = "{\"_id\": \"once_off_to_master\",\"target\":\"" + replicationMasterUrl + "\",\"source\":\"" + localDb + "\"}";
+//    
 //    	try {
 //			HTTPRequest.post(localReplicationDbUrl, replicationDataFromMaster);
 //		} catch (JSONException e) {

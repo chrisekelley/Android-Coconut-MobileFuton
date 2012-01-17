@@ -77,7 +77,15 @@ public class CoconutActivity extends Activity {
  // For app engine SDK
     public static String PUSH_SERVER_URL;
     public static String C2DM_SENDER;
+    public static String REPLICATION_SERVER_URL;
 
+	public static String getREPLICATION_SERVER_URL() {
+		return REPLICATION_SERVER_URL;
+	}
+
+	public static void setREPLICATION_SERVER_URL(String rEPLICATION_SERVER_URL) {
+		REPLICATION_SERVER_URL = rEPLICATION_SERVER_URL;
+	}
 
 	public static String getC2DM_SENDER() {
 		return C2DM_SENDER;
@@ -291,17 +299,25 @@ public class CoconutActivity extends Activity {
 		    		setPUSH_SERVER_URL(pushServerUrl);
 		    		Log.d(TAG, "PUSH_SERVER_URL: " + PUSH_SERVER_URL);
 		    	}
-		    	// If PUSH_SERVER_URL is still null, don't configure C2DM or replication.
-		    	if (PUSH_SERVER_URL == null) {
-		    		if (C2DM_SENDER == null) {
-		    			String c2dmSender = properties.getProperty("c2dm_sender");
-		    			setC2DM_SENDER(c2dmSender);
-		    			Log.d(TAG, "C2DM_SENDER: " + C2DM_SENDER);
-		    		}
+
+		    	if (C2DM_SENDER == null) {
+		    		String c2dmSender = properties.getProperty("c2dm_sender");
+		    		setC2DM_SENDER(c2dmSender);
+		    		Log.d(TAG, "C2DM_SENDER: " + C2DM_SENDER);
+		    	}
+		    	
+		    	if (REPLICATION_SERVER_URL == null) {
+		    		String masterServer = properties.getProperty("master_server");
+		    		setREPLICATION_SERVER_URL(masterServer);
+		    		Log.d(TAG, "REPLICATION_SERVER_URL: " + REPLICATION_SERVER_URL);
+		    	}
+		    		
+		    	// If REPLICATION_SERVER_URL is still null, don't configure C2DM or replication.	
+		    	if (REPLICATION_SERVER_URL != null) {
 		    		String localDb = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/" +  properties.getProperty("app_db");
 		    		Log.d(TAG, "localDb: " + localDb);
 		    		String localReplicationDbUrl = "http://localhost:" + properties.getProperty("local_couch_app_port") +"/_replicate";
-		    		String replicationMasterUrl = "http://" + properties.getProperty("master_server") + "/coconut";
+		    		String replicationMasterUrl = "http://" + REPLICATION_SERVER_URL + "/coconut";
 		    		String replicationDataFromMaster = "{\"_id\": \"continuous_from_master\",\"target\":\"" + localDb + "\",\"source\":\"" + replicationMasterUrl + "\", \"continuous\": true}";
 		    		String replicationDataToMaster = "{\"_id\": \"continuous_to_master\",\"target\":\"" + replicationMasterUrl + "\",\"source\":\"" + localDb + "\", \"continuous\": true}";
 

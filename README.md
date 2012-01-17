@@ -26,6 +26,15 @@ cp coconut.couch ~/source/Android-Coconut-MobileFuton/assets/coconut.couch.jpg
 
 If you would like to use synchronization with a master CouchDB or C2DM notification, 
 un-comment and complete the values in res/war/coconut.properties.
+
+## Testing the app and replication
+
+Continuous replication is already enabled in coconut.properties - it points to a test couch on iriscouch.com. 
+Visit [vetula.iriscouch.com/coconut](http://vetula.iriscouch.com/coconut/_design/coconut/index.html). 
+
+Create a record by clicking the Incident button. 
+In a few moments, your new record should be replicated to the app on your local instance. Click the refresh button to see the new data.
+The app works best in landscape orientation if you are using a smartphone - the refresh button may be cut off in vertical orientation.
     
 ## Installing the app
 
