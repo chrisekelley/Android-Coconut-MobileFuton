@@ -30,10 +30,16 @@ and install in the project.
 If you would like to use synchronization with a master CouchDB or C2DM notification, 
 un-comment and complete the values in res/war/coconut.properties.
 
+### Logging
+
+Change the log level in mobilefuton.ini. It is currently set to error. Setting log level to debug creates huge log files due to continuous replication.
+
 ## Testing the app and replication
 
+You may download the app from [ictedge.org](http://ictedge.org/files/coconut/demo/Android-Coconut-MobileFuton.apk).
+
 Continuous replication is already enabled in coconut.properties - it points to a test couch on iriscouch.com. 
-Visit [vetula.iriscouch.com/coconut](http://vetula.iriscouch.com/coconut/_design/coconut/index.html#home). 
+Visit [vetula.iriscouch.com/coconut](http://vetula.iriscouch.com/coconut/_design/coconut/index.html#home) to view/edit records. 
 
 Create a record by clicking the Incident button. 
 In a few moments, your new record should be replicated to the app on your local instance. Click the refresh button to see the new data.

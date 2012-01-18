@@ -103,145 +103,8 @@ public class CoconutActivity extends Activity {
 		PUSH_SERVER_URL = pUSH_SERVER_URL;
 	}
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
-		startCouch();
-		uiHandler = new Handler();
-		coconutRef = this;
-	}
 	
-	@Override
-    protected void onActivityResult( int requestCode,
-                                        int resultCode, 
-                                        Intent extras ) {
-        super.onActivityResult( requestCode, resultCode, extras);
-        switch(requestCode) {
-        case ACTIVITY_ACCOUNTS: {
-        	if (resultCode == RESULT_OK) {
-        		String accountName = extras.getStringExtra( "account" );
-        		selectedAccount = getAccountFromAccountName( accountName );
-        		Toast.makeText(this, "Account selected: "+accountName, Toast.LENGTH_SHORT).show();
-        		if( selectedAccount != null )
-        			register();
-        	} 
-        }
-        break;
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        boolean result = super.onCreateOptionsMenu(menu);
-        menu.add( Menu.NONE, COPY_TEXT, Menu.NONE, R.string.copy_text );
-        menu.add( Menu.NONE, MENU_ACCOUNTS, Menu.NONE, R.string.menu_accounts );
-        return result;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected( MenuItem item ) {
-        switch ( item.getItemId() ) {
-            case MENU_ACCOUNTS: {
-                    Intent i = new Intent();
-                    i.setClassName( 
-                        "org.rti.rcd.ict.lgug",
-                        "org.rti.rcd.ict.lgug.AccountSelector" );
-                    startActivityForResult(i, ACTIVITY_ACCOUNTS );
-                    return true;
-                }
-            case COPY_TEXT: {
-                Toast.makeText(getApplicationContext(), "Select Text", Toast.LENGTH_SHORT).show();
-                //selectAndCopyText();
-                emulateShiftHeld(webView);
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    // kudos: http://stackoverflow.com/questions/6058843/android-how-to-select-texts-from-webview    
-    private void emulateShiftHeld(WebView view)
-    {
-        try
-        {
-            KeyEvent shiftPressEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
-                                                    KeyEvent.KEYCODE_SHIFT_LEFT, 0, 0);
-            shiftPressEvent.dispatch(view);
-            Toast.makeText(this, "Now click the text you highlighted.", Toast.LENGTH_SHORT).show();
-        }
-        catch (Exception e)
-        {
-            Log.e("dd", "Exception in emulateShiftHeld()", e);
-        }
-    }
-    
-    public static CoconutActivity getRef() {
-        return coconutRef;
-    }
-
-	@Override
-	public void onRestart() {
-		super.onRestart();
-		startCouch();
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		try {
-			unbindService(couchServiceConnection);
-		} catch (IllegalArgumentException e) {
-		}
-	}
 	
-	 public void displayMessage( String message ) {
-	        //uiHandler.post( new AddMessageTask( message ) );
-	        uiHandler.post( new ToastMessage( this, message ) );
-	    }
-
-	    public Account getSelectedAccount() {
-	        return selectedAccount;
-	    }
-
-	    public void onRegistered() {
-	        Log.d( LOG_TAG, "onRegistered" );
-	        registered = true; 
-	        uiHandler.post( new ToastMessage( this,"Registered" ) );
-	    }
-
-	    public void onUnregistered() {
-	        Log.d( LOG_TAG, "onUnregistered" );
-	        registered = false; 
-	        uiHandler.post( new ToastMessage( this, "Unregistered" ) );
-	    }
-
-	    private Account getAccountFromAccountName( String accountName ) {
-	        AccountManager accountManager = AccountManager.get( this );
-	        Account accounts[] = accountManager.getAccounts();
-	        for( int i = 0 ; i < accounts.length ; ++i )
-	            if( accountName.equals( accounts[i].name ) )
-	                return accounts[i];
-	        return null;
-	    }
-
-	    private void register() {
-	        if( registered )
-	            unregister();
-	        else {
-	            Log.d( LOG_TAG, "register()" );
-	            C2DMessaging.register( this, C2DM_SENDER );
-	            Log.d( LOG_TAG, "register() done" );
-	        }
-	    }
-
-	    private void unregister() {
-	        if( registered ) {
-	            Log.d( LOG_TAG, "unregister()" );
-	            C2DMessaging.unregister( this );
-	            Log.d( LOG_TAG, "unregister() done" );
-	        }
-	    }
 
 	private final ICouchbaseDelegate mCallback = new ICouchbaseDelegate() {
 		@Override
@@ -498,7 +361,99 @@ public class CoconutActivity extends Activity {
 		}
 		return null;
 	}
- 
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+		startCouch();
+		uiHandler = new Handler();
+		coconutRef = this;
+	}
+	
+	@Override
+    protected void onActivityResult( int requestCode,
+                                        int resultCode, 
+                                        Intent extras ) {
+        super.onActivityResult( requestCode, resultCode, extras);
+        switch(requestCode) {
+        case ACTIVITY_ACCOUNTS: {
+        	if (resultCode == RESULT_OK) {
+        		String accountName = extras.getStringExtra( "account" );
+        		selectedAccount = getAccountFromAccountName( accountName );
+        		Toast.makeText(this, "Account selected: "+accountName, Toast.LENGTH_SHORT).show();
+        		if( selectedAccount != null )
+        			register();
+        	} 
+        }
+        break;
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        boolean result = super.onCreateOptionsMenu(menu);
+        menu.add( Menu.NONE, COPY_TEXT, Menu.NONE, R.string.copy_text );
+        menu.add( Menu.NONE, MENU_ACCOUNTS, Menu.NONE, R.string.menu_accounts );
+        return result;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) {
+        switch ( item.getItemId() ) {
+            case MENU_ACCOUNTS: {
+                    Intent i = new Intent();
+                    i.setClassName( 
+                        "org.rti.rcd.ict.lgug",
+                        "org.rti.rcd.ict.lgug.AccountSelector" );
+                    startActivityForResult(i, ACTIVITY_ACCOUNTS );
+                    return true;
+                }
+            case COPY_TEXT: {
+                Toast.makeText(getApplicationContext(), "Select Text", Toast.LENGTH_SHORT).show();
+                //selectAndCopyText();
+                emulateShiftHeld(webView);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // kudos: http://stackoverflow.com/questions/6058843/android-how-to-select-texts-from-webview    
+    private void emulateShiftHeld(WebView view)
+    {
+        try
+        {
+            KeyEvent shiftPressEvent = new KeyEvent(0, 0, KeyEvent.ACTION_DOWN,
+                                                    KeyEvent.KEYCODE_SHIFT_LEFT, 0, 0);
+            shiftPressEvent.dispatch(view);
+            Toast.makeText(this, "Now click the text you highlighted.", Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e)
+        {
+            Log.e("dd", "Exception in emulateShiftHeld()", e);
+        }
+    }
+    
+    public static CoconutActivity getRef() {
+        return coconutRef;
+    }
+
+	@Override
+	public void onRestart() {
+		super.onRestart();
+		startCouch();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		try {
+			unbindService(couchServiceConnection);
+		} catch (IllegalArgumentException e) {
+		}
+	}
+	
     class ToastMessage implements Runnable {
         public ToastMessage( Context ctx, String msg ) {
             this.ctx = ctx;
@@ -538,4 +493,52 @@ public class CoconutActivity extends Activity {
 
         String message;
     }
+    
+    public void displayMessage( String message ) {
+		//uiHandler.post( new AddMessageTask( message ) );
+		uiHandler.post( new ToastMessage( this, message ) );
+	}
+
+	public Account getSelectedAccount() {
+		return selectedAccount;
+	}
+
+	public void onRegistered() {
+		Log.d( LOG_TAG, "onRegistered" );
+		registered = true; 
+		uiHandler.post( new ToastMessage( this,"Registered" ) );
+	}
+
+	public void onUnregistered() {
+		Log.d( LOG_TAG, "onUnregistered" );
+		registered = false; 
+		uiHandler.post( new ToastMessage( this, "Unregistered" ) );
+	}
+
+	private Account getAccountFromAccountName( String accountName ) {
+		AccountManager accountManager = AccountManager.get( this );
+		Account accounts[] = accountManager.getAccounts();
+		for( int i = 0 ; i < accounts.length ; ++i )
+			if( accountName.equals( accounts[i].name ) )
+				return accounts[i];
+		return null;
+	}
+
+	private void register() {
+		if( registered )
+			unregister();
+		else {
+			Log.d( LOG_TAG, "register()" );
+			C2DMessaging.register( this, C2DM_SENDER );
+			Log.d( LOG_TAG, "register() done" );
+		}
+	}
+
+	private void unregister() {
+		if( registered ) {
+			Log.d( LOG_TAG, "unregister()" );
+			C2DMessaging.unregister( this );
+			Log.d( LOG_TAG, "unregister() done" );
+		}
+	}
 }
