@@ -6,7 +6,7 @@ This is a demonstration of using Dale Harvey's [Mobile Futon](https://github.com
 
 My app is targeting Android 2.1-update 1 (API level 7) which is used on the Samsung Galaxy Tab and the Nexus One. 
 This version has a limit of 1MB for files in the assets directory. 
-The workaround is to rename any files over 1 MB with an extention that is one of the formats that is not uncompressed by default Android. 
+The workaround is to rename any files over 1 MB with an extension that is one of the formats that is not uncompressed by default Android. 
 See [Dealing with Asset Compression in Android Apps](http://ponystyle.com/blog/2010/03/26/dealing-with-asset-compression-in-android-apps/) for more info.
 Note - this is no longer an issue w/ Android 2.3.
 
@@ -23,6 +23,9 @@ cp coconut.couch ~/source/Android-Coconut-MobileFuton/assets/coconut.couch.jpg
     couchapp push --export > ../Android-Coconut-MobileFuton/assets/coconut.json.jpg
 ```
 ## Configuration
+
+After cloning the project, download the most recent version of [Mobile Couchbase](http://www.couchbase.org/get/couchbase-mobile-for-android/current) 
+and install in the project.
 
 If you would like to use synchronization with a master CouchDB or C2DM notification, 
 un-comment and complete the values in res/war/coconut.properties.
