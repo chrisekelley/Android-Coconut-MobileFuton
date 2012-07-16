@@ -13,19 +13,20 @@ Note - this is no longer an issue w/ Android 2.3.
 To export the database, there are a couple of options: copy the couchdb or use couchapp push. I'm currently copying the couchdb - 
 this seems to work better with recent versions of MobileCouchbase:
 
-* Copy the couch:
+* Method 1: Copy the couch (preferred method):
 ```
 cd /usr/local/var/lib/couchdb
+```
+```
 cp coconut.couch ~/source/Android-Coconut-MobileFuton/assets/coconut.couch.jpg
 ```
-* Use couchapp push:
+* Method 2: Use couchapp push (no longer recommended):
 ```
     couchapp push --export > ../Android-Coconut-MobileFuton/assets/coconut.json.jpg
 ```
 ## Configuration
 
-After cloning the project, download the most recent version of [Mobile Couchbase](http://www.couchbase.org/get/couchbase-mobile-for-android/current) 
-and install in the project.
+After cloning the project, download the most recent version of [Mobile Couchbase](http://www.couchbase.com/wiki/display/couchbase/Android) and install in the project.
 
 If you would like to use synchronization with a master CouchDB or C2DM notification, 
 un-comment and complete the values in res/war/coconut.properties.

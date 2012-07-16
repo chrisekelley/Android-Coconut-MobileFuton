@@ -103,9 +103,6 @@ public class CoconutActivity extends Activity {
 		PUSH_SERVER_URL = pUSH_SERVER_URL;
 	}
 
-	
-	
-
 	private final ICouchbaseDelegate mCallback = new ICouchbaseDelegate() {
 		@Override
 		public void couchbaseStarted(String host, int port) {
@@ -132,29 +129,29 @@ public class CoconutActivity extends Activity {
 				e.printStackTrace();
 			}
 		    
+		    Properties properties = new Properties();
+
+	    	try {
+	    		InputStream rawResource = getResources().openRawResource(R.raw.coconut);
+	    		properties.load(rawResource);
+	    		System.out.println("The properties are now loaded");
+	    		System.out.println("properties: " + properties);
+	    	} catch (Resources.NotFoundException e) {
+	    		System.err.println("Did not find raw resource: " + e);
+	    	} catch (IOException e) {
+	    		System.err.println("Failed to open microlog property file");
+	    	}
+		    
 		    // Copy the couch db from /usr/local/var/lib/couchdb on dev instance.
 		    try {
-		    	String sourceDb = "coconut.couch.jpg";
-		    	String destDb = "coconut.couch";
+		    	String sourceDb = properties.getProperty("source_db_file");
+		    	String destDb = properties.getProperty("dest_db_file");
 		    	File source = new File(CouchbaseMobile.externalPath() + "/db/" + sourceDb);
 		    	File destination = new File(CouchbaseMobile.externalPath() + "/db/" + destDb);
 		    	if (!destination.exists()) {
                     Log.d(TAG, "Installing the database at " + destination);
 			    	couch.installDatabase(sourceDb);
 			    	source.renameTo(destination);
-		    	}
-		    	
-		    	Properties properties = new Properties();
-
-		    	try {
-		    		InputStream rawResource = getResources().openRawResource(R.raw.coconut);
-		    		properties.load(rawResource);
-		    		System.out.println("The properties are now loaded");
-		    		System.out.println("properties: " + properties);
-		    	} catch (Resources.NotFoundException e) {
-		    		System.err.println("Did not find raw resource: " + e);
-		    	} catch (IOException e) {
-		    		System.err.println("Failed to open microlog property file");
 		    	}
 		    	
 		    	if (PUSH_SERVER_URL == null) {
